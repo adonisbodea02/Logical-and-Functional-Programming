@@ -1,0 +1,93 @@
+Atomii de pe nivel k inlocuit cu 0
+(defun make_level_0 (tree level level_so_far)
+    (cond
+        ((and (atom tree) (= level level_so_far)) 0)
+        ((atom tree) tree)
+        (t (mapcar #'(lambda (a) (make_level_0 a level (+ 1 level_so_far))) tree))
+    )
+)
+
+Calea de la radacina la un nod dat
+(defun route(tree e)
+    (cond
+        ((null tree) nil)
+        ((equal (car tree) e) (list e))
+        ((not (equal (route (cadr tree) e) nil)) (cons (car tree) (route (cadr tree) e)))
+        ((not (equal (route (caddr tree) e) nil)) (cons (car tree) (route (caddr tree) e)))
+    )
+)
+
+Returneaza ultimul element al unei liste
+(defun get_last(l last)
+    (cond
+        ((null l) last)
+        (t (get_last (cdr l) (car l)))
+    )
+)
+
+Nr de subliste care care au ultimul atom numar
+(defun all_sublists_atom (l)
+    (cond 
+        ((atom l) 0)
+        ((numberp (get_last (transform l) 'nothing)) (write l) (format t "~%") (+ 1 (apply '+ (mapcar #' all_sublists_atom l))))
+        (t (apply '+ (mapcar #' all_sublists_atom l)))
+    )
+)
+
+Multimea submultimilor
+(defun powerset (lst)
+  (if lst (mapcan (lambda (el) (list (cons (car lst) el) el))
+                (powerset (cdr lst)))
+      '(()))
+)
+
+Verificare daca lista e lineara
+(defun linear_list (l)
+    (cond
+        ((null l) t)
+        ((listp (car l)) nil)
+        (t (linear_list (cdr l)))
+    )
+)
+
+Determina adancimea unei liste
+(defun determine_depth (x)
+    (cond
+        ((or (atom x) (linear_list x)) 0)
+        (t (+ 1 (apply 'max (mapcar #'determine_depth x))))
+    )
+)
+
+Numarul de numere de pe nivele impare
+(defun number_of_evens (tree level_so_far)
+    (cond
+        ((and (numberp tree) (= (mod level_so_far 2) 1)) 1)
+        ((atom tree) 0)
+        (t (apply '+ (mapcar #'(lambda (a) (number_of_evens a (+ 1 level_so_far))) tree)))
+    )
+)
+
+Lista lineara invers
+(defun rev (L)
+    (COND
+         ((NULL L) NIL)
+         (T (APPEND (rev (CDR L)) (LIST (CAR L))))
+     )
+)
+
+Lista nelineara invers
+(defun reverse_list (x)
+    (cond
+        ((atom x) x)
+        (t (mapcar #'reverse_list (rev x)))
+    )
+)
+
+Transformare lista lineara
+(defun transform(l)
+    (cond
+         ((null l) nil)
+         ((atom (car l)) (cons (car l) (transform (cdr l))))
+         (T (APPEND (transform (car l)) (transform (cdr l))))
+    )
+)

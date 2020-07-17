@@ -1,0 +1,241 @@
+%insert(l1,...,ln,CurPos,Elem,NextPos) = [], if l is []
+%				       = [l1, elem], if l = [l1]
+%				       = l1 |_| insert(l2,...ln,CurPos+1,Elem,NextPos), if CurPos=\=NextPos
+%				       = l1 |_| Elem |_| insert(l2,...ln,CurPos+1,Elem,(NextPos+1)*2-1), if CurPos==NextPos
+%insert(L: list, CurPos: int, Elem: int, NextPos: int, RList: list)
+%insert(i,i,i,i,o)
+
+insert([], _CurPos, _Elem, _NextPos, []).
+insert([H], 1, Elem, 1, [H, Elem]).
+insert([H|T], CurPos, Elem, NextPos, RList):-
+    CurPos=\=NextPos,
+    CurPos1 is CurPos+1,
+    insert(T, CurPos1, Elem, NextPos, RList1),
+    RList = [H|RList1].
+insert([H|T], CurPos, Elem, NextPos, RList):-
+    CurPos==NextPos,
+    CurPos1 is CurPos+1,
+    NextPos1 is (NextPos+1)*2-1,
+    insert(T, CurPos1, Elem, NextPos1, RList1),
+    RList = [H,Elem|RList1].
+
+%insert_heterogen(l1,...,ln,LastInt) = [], if l is []
+%			   	     = insert(l1, 1, LastInt, 1) |_| insert_heterogen(l2,...,ln,LastInt), if l1 is List and LastInt=\=0
+%			   	     = l1 |_| insert_heterogen(l2,...,ln,LastInt), if l1 is List and LastInt = 0
+%			   	     = l1 |_| insert_heterogen(l2,...,ln,l1), if l1 is number
+%insert_heterogen(L: list, LastInt: integer, RList: list)
+%insert(i,i,o)
+insert_heterogen([], _LastInt, []).
+insert_heterogen([H|T], LastInt, RList):-
+    is_list(H),
+    LastInt=\=0,
+    insert(H, 1, LastInt, 1, RezInsert),
+    insert_heterogen(T, LastInt, R),
+    RList = [RezInsert|R].
+insert_heterogen([H|T], LastInt, RList):-
+    is_list(H),
+    LastInt==0,
+    insert_heterogen(T, LastInt, R),
+    RList = [H|R].
+insert_heterogen([H|T], _LastInt, RList):-
+    number(H),
+    LastInt2 is H,
+    insert_heterogen(T, LastInt2, R),
+    RList = [H|R].
+
+occurences([], _Elem, Col, R):- R is Col.
+occurences([H|T], Elem, Col, R):-
+    Elem == H,
+    NewCol = Col + 1,
+    occurences(T, Elem, NewCol, RT),
+    R is RT.
+occurences([H|T], Elem, Col, R):-
+    Elem =\= H,
+    occurences(T, Elem, Col, RT),
+    R is RT.
+
+remove_el([], _Elem, []).
+remove_el([H|T], Elem, R):-
+    Elem == H,
+    remove_el(T, Elem, RT),
+    R = RT.
+remove_el([H|T], Elem, R):-
+    Elem =\= H,
+    remove_el(T, Elem, RT),
+    R = [H|RT].
+
+remove_duplicates([], []).
+remove_duplicates([H|T], R):-
+    remove_el(T,H,Rez),
+    remove_duplicates(Rez, RezList),
+    R = [H|RezList].
+
+remove_duplicates_compl([], []).
+remove_duplicates_compl([H|T], R):-
+    occurences(T, H, 0, Count),
+    Count > 0,
+    remove_el(T,H,Rez),
+    remove_duplicates_compl(Rez, RezList),
+    R = RezList.
+remove_duplicates_compl([H|T], R):-
+    occurences(T, H, 0, Count),
+    Count == 0,
+    remove_el(T,H,Rez),
+    remove_duplicates_compl(Rez, RezList),
+    R = [H|RezList].
+
+create_list(M, N, RList):-
+    N >= M,
+    NewM is M+1,
+    create_list(NewM, N, R),
+    RList = [M|R].
+create_list(M, N, RList):-
+    M > N,
+    RList = [].
+
+valley([],_Changes,true).
+valley([_H],_Changes,true).
+valley([H1,H2|T], Changes, Rez):-
+    H1 >= H2,
+    Changes == 0,
+    valley([H2|T], Changes, Rez).
+valley([H1,H2|T], Changes, Rez):-
+    H2 >= H1,
+    Changes == 0,
+    NewChanges is Changes+1,
+    valley([H2|T], NewChanges, Rez).
+valley([H1,H2|T], Changes, Rez):-
+    H2 >= H1,
+    Changes == 1,
+    valley([H2|T], Changes, Rez).
+valley([H1,H2|_T], Changes, Rez):-
+    H1 >= H2,
+    Changes =\= 0,
+    Rez = false.
+
+primeNumber(A) :-
+    A > 1,                 % Negative numbers, 0 and 1 are not prime.
+    prime_prime(A, 2).     % Begin iteration:
+
+prime_prime(A, B) :-       % Test if A divides by B without remainder
+    B >= A                 % The limit was reached?
+    ->  true               %     Then it's prime.
+    ;   0 is A mod B       % B divides A without a remainder?
+    ->  false              %     Then it's not prime.
+    ;   succ(B, C),        % Otherwise: C is B + 1
+        prime_prime(A, C). % Test if C divides A.
+
+gcd(0, X, X):- X > 0, !.
+gcd(X, Y, Z):- X >= Y, X1 is X-Y, gcd(X1,Y,Z).
+gcd(X, Y, Z):- X < Y, X1 is Y-X, gcd(X1,X,Z).
+
+oglindit(0, P, R):- R is P. 
+
+oglindit(A,P,R):-
+    A > 0,
+    U is A mod 10,
+    NewP is U + 10 * P,
+    NewA is A div 10,
+    oglindit(NewA, NewP, R).
+
+;gnu clisp 2.49
+
+(defun gcd_user(a b)
+    (cond
+        ((= a b) a)
+        ((= a 0) b)
+        ((= b 0) a)
+        ((= 1 b) 1)
+        ((= a 1) 1)
+        ((> a b) (gcd (- a b) b))
+        (t (gcd a (- b a)))
+    )
+)
+
+(defun lcm_user(a b)
+    (/ (* a b) (gcd_user a b))
+)
+
+(defun lcm_list(l last)
+    (cond
+        ((null l) last)
+        ((numberp (car l)) (lcm_list (cdr l) (lcm (car l) last)))
+        ((not (numberp (car l))) (lcm_list (cdr l) last))
+    )
+)
+
+(defun mountain(l last turns start_well entries)
+    (cond
+        ((and (null l) (= turns 1) (= start_well 1)) t)
+        ((or (and (null l) (= turns 0)) (and (null l) (= start_well 0))) nil)
+        ((= entries 0) (mountain (cdr l) (car l) turns start_well (+ entries 1)))
+        ((and (<= last (car l)) (= turns 0) (not (= entries 0))) (mountain (cdr l) (car l) turns 1 entries))
+        ((and (> last (car l)) (= turns 0)) (mountain (cdr l) (car l) (+ turns 1) start_well entries))
+        ((and (>= last (car l)) (= 1 turns)) (mountain (cdr l) (car l) turns start_well entries))
+        ((and (<= last (car l)) (= turns 1)) nil)
+    )
+)
+
+(defun max_nonlinear_list(l max_so_far)
+    (cond
+        ((null l) max_so_far)
+        ((and (numberp (car l)) (> (car l) max_so_far)) (max_nonlinear_list (cdr l) (car l)))
+        ((and (numberp (car l)) (<= (car l) max_so_far)) (max_nonlinear_list (cdr l) max_so_far))
+        ((and (listp (car l)) (> (max_nonlinear_list (car l) 0)  max_so_far)) (max_nonlinear_list (cdr l) (max_nonlinear_list (car l) 0)))
+        ((and (listp (car l)) (<= (max_nonlinear_list (car l) 0)  max_so_far)) (max_nonlinear_list (cdr l) max_so_far))
+        (t (max_nonlinear_list (cdr l) max_so_far))
+    )
+)
+
+(defun delete_all(l e)
+    (cond 
+        ((null l) nil)
+        ((listp (car l)) (cons (delete_all (car l) e) (delete_all (cdr l) e)))
+        ((equal (car l) e) (delete_all (cdr l) e))
+        (t (cons (car l) (delete_all (cdr l) e)))
+    )
+)
+
+(defun product_nonlinear_list(l product_so_far)
+    (cond
+        ((null l) product_so_far)
+        ((and (atom (car l)) (numberp (car l)) (= 0 (mod (car l) 2))) (product_nonlinear_list (cdr l) (* product_so_far (car l))))
+        ((and (atom (car l)) (numberp (car l)) (= 1 (mod (car l) 2))) (product_nonlinear_list (cdr l) product_so_far))
+        ((listp (car l)) (product_nonlinear_list (cdr l) (* product_so_far (product_nonlinear_list (car l) 1))))
+        (t (product_nonlinear_list (cdr l) product_so_far))
+    )
+)   
+;(write(lcm_list '(2 3 4 (5 5) e 6) 1))
+;(write (mountain '(18 19 20 17 16) 0 0 0 0))
+;(write (max_nonlinear_list '(13 14 10 (10 66 20 66) e r 66 12 11 66 56 34) 0))
+;(setq a '(13 14 10 (10 66 (10 66 20) 20 66) e r 66 12 11 66 56 34))
+;(write (delete_all a (max_nonlinear_list a 0)))
+(setq a1 10)
+(setq a2 21)
+(setq a3 14)
+(setq a4 2)
+(setq e "monstru")
+(setq r "voldemort")
+(setq b (list a1 13 2 (list a1 67 (list 9 a2 3) 3 5) e r 1 a3 11 1 a4 1))
+(format t "Here it is:~%")
+(write (product_nonlinear_list b 1))
+
+diviz(1,_Last,[1]).
+
+diviz(N,Last,Rez):-
+    Last < N,
+    N mod Last == 0,
+    NewLast is Last + 1,
+    diviz(N,NewLast,RT),
+    Rez = RT.
+    
+diviz(N,Last,Rez):-
+    Last < N,
+    N mod Last =\= 0,
+    NewLast is Last + 1,
+    diviz(N,NewLast,RT),
+    Rez = [Last|RT].
+    
+diviz(N,Last,Rez):-
+    Last > N div 2,
+    Rez.

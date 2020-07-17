@@ -1,0 +1,41 @@
+;L3-P14 Write a function that returns the number of atoms in a list, at any level.
+(defun count_atoms (x)
+    (cond
+        ((and (atom x) (not (numberp x))) 1)
+        ((numberp x) 0)
+        (t (apply '+ (mapcar #'count_atoms x)))
+    )
+)
+
+;L3-P15 Write a function that reverses a list together with all its sublists elements, at any level.
+(defun reverse_list (x)
+    (cond
+        ((atom x) x)
+        (t (mapcar #'reverse_list (reverse x)))
+    )
+)
+
+;L3-P11 Write a function to determine the depth of a list.
+(defun linear_list (l)
+    (cond
+        ((null l) t)
+        ((listp (car l)) nil)
+        (t (linear_list (cdr l)))
+    )
+)
+                        
+(defun determine_depth (x)
+    (cond
+        ((or (atom x) (linear_list x)) 0)
+        (t (+ 1 (apply 'max (mapcar #'determine_depth x))))
+    )
+)
+
+;L3-P7 Write a function that substitutes an element E with all elements of a list L1 at all levels of a given list L.
+(defun substitute_list (x l2 e)
+    (cond
+        ((equal x e) l2 )
+        ((atom x) x)
+        ((listp x) (mapcar #'(lambda (a) (substitute_list a l2 e)) x))
+    )
+)

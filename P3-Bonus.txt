@@ -1,0 +1,49 @@
+15. For a given n, positive, determine all decomposition of n as a sum of consecutive natural numbers.
+
+create_list(M, N, RList):-
+    N >= M,
+    NewM is M+1,
+    create_list(NewM, N, R),
+    RList = [M|R].
+create_list(M, N, RList):-
+    M > N,
+    RList = [].
+
+sum([], R, S):- S = R.
+sum([H|T], R, S):-
+    NewR is R + H,
+    sum(T, NewR, S).
+
+subset([],[]).
+subset([H|T], R):-subset(T,R1),
+	R = [H|R1].
+subset([_H|T], R):-subset(T,RList),
+    R = RList.
+
+check_consecutive([]):-true.
+check_consecutive([_H]):-true.
+check_consecutive([H1,H2]):-
+    H1 + 1 =:= H2,
+    true.
+check_consecutive([H1,H2]):-
+    H1 + 1 =\= H2,
+    false.
+check_consecutive([H1,H2|T]):-
+    H1 + 1 =:= H2,
+    check_consecutive([H2|T]).
+check_consecutive([H1,H2|_T]):-
+    H1 + 1 =\= H2,
+    false.
+
+onesol(N, R):-
+    create_list(1,N div 2 + 1,RList),
+    subset(RList,RSubset),
+    check_consecutive(RSubset),
+    sum(RSubset,0,S),
+    S == N,
+    R = RSubset.
+
+allsolutions(N,RALL):-
+    findall(ROS, onesol(N,ROS), RALL).
+    
+

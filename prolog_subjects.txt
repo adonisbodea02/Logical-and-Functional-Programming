@@ -1,0 +1,53 @@
+reverse([],R,R).
+reverse([H|T],Tr,R):-
+    number(H),
+    reverse(T,[H|Tr],R).
+reverse([H|T],Tr,R):-
+    is_list(H),
+    reverse(H,[],Rez),
+    reverse(T,[Rez|Tr],R).
+
+subset([],[]).
+subset([H|T], R):-subset(T,R1),
+	R = [H|R1].
+subset([_H|T], R):-subset(T,RList),
+    R = RList.
+
+insert([], E, [E]).
+insert([H|T],E,[H|Tr]):-
+    insert(T,E,Tr).
+insert([H|T],E,[E,H|T]).
+
+perm([], []).
+perm([H|T], R):-
+    perm(T,RT),
+    insert(RT,H,R).
+
+comb(_, 0, []).
+comb([H|T],K,[H|Tr]):-
+    K > 0,
+    K1 is K-1,
+    comb(T,K1,Tr).
+comb([_H|T],K,R):-
+    K > 0,
+    comb(T,K,R).
+
+create_list(M, N, RList):-
+    N >= M,
+    NewM is M+1,
+    create_list(NewM, N, R),
+    RList = [M|R].
+create_list(M, N, RList):-
+    M > N,
+    RList = [].
+
+onesol(N, R):-
+    create_list(1,N div 2 + 1,RList),
+    subset(RList,RSubset),
+    check_consecutive(RSubset),
+    sum(RSubset,0,S),
+    S == N,
+    R = RSubset.
+
+allsolutions(N,RALL):-
+    findall(ROS, onesol(N,ROS), RALL).

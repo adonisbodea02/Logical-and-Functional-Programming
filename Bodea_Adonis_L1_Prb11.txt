@@ -1,0 +1,289 @@
+;gcd_user(a,b)  = a, a = b, b = 0
+	`	= b, a = 0
+		= 1, a = 1 or b = 1
+		= gcd(a-b, b), a > b
+		= gcd(a, b-a), otherwise 
+ 
+(defun gcd_user(a b)
+    (cond
+        ((= a b) a)
+        ((= a 0) b)
+        ((= b 0) a)
+        ((= 1 b) 1)
+        ((= a 1) 1)
+        ((> a b) (gcd (- a b) b))
+        (t (gcd a (- b a)))
+    )
+)
+
+(defun lcm_user(a b)
+    (/ (* a b) (gcd_user a b))
+)
+
+;lcm_list(l1,l2,...,ln last)    = last, l is null
+	`			= lcm_list(l2,l3,..ln, lcm(last, l1), l1 is number
+				= lcm_list(l2,...,ln, last), l1 is not number
+
+(defun lcm_list(l last)
+    (cond
+        ((null l) last)
+        ((numberp (car l)) (lcm_list (cdr l) (lcm (car l) last)))
+        ((not (numberp (car l))) (lcm_list (cdr l) last))
+    )
+)
+
+;mountain(l1,l2,...,ln, last, turns, start_well, entries)       = true, if l is null and turns is 1
+	`							= false, if (l is null and turns = 0) or (l is null and start_well is 0) or (turns = 1 and last <= l1) 
+								= mountain(l2,...,ln, l1, turns, start_well, entries+1), if entries = 0
+								= mountain(l2,...,ln,l1,turns,1,entries), if last <= l1, turns = 0, entries != 0
+								= mountain(l2,...,ln,l1,turns+1,start_well,entries), if last > l1, turns = 0
+								= mountain(l2,...,ln,l1,turns,start_well,entries), if last >= l1, turns = 1
+
+
+(defun mountain(l last turns start_well entries)
+    (cond
+        ((and (null l) (= turns 1) (= start_well 1)) t)
+        ((or (and (null l) (= turns 0)) (and (null l) (= start_well 0))) nil)
+        ((= entries 0) (mountain (cdr l) (car l) turns start_well (+ entries 1)))
+        ((and (<= last (car l)) (= turns 0) (not (= entries 0))) (mountain (cdr l) (car l) turns 1 entries))
+        ((and (> last (car l)) (= turns 0)) (mountain (cdr l) (car l) (+ turns 1) start_well entries))
+        ((and (>= last (car l)) (= 1 turns)) (mountain (cdr l) (car l) turns start_well entries))
+        ((and (<= last (car l)) (= turns 1)) nil)
+    )
+)
+
+;max_nonlinear_list(l, max_so_far) = max_so_far, l is null
+				   = max_nonlinear_list(l2,...,ln, l1), l1 is number and l1 > max_so_far
+			 	   = max_nonlinear_list(l2,...,ln, l1), l1 is number and l1 <= max_so_far
+			 	   = max_nonlinear_list(l2,...,ln, max_nonlinear_list(l1, 0)), l1 is list and max_nonlinear_list(l1, 0) > max_so_far
+			 	   = max_nonlinear_list(l2,...,ln, max_so_far), l1 is list and max_nonlinear_list(l1, 0) <= max_so_far
+				   = max_nonlinear_list(l2,...,ln, max_so_far), otherwise
+
+(defun max_nonlinear_list(l max_so_far)
+    (cond
+        ((null l) max_so_far)
+        ((and (numberp (car l)) (> (car l) max_so_far)) (max_nonlinear_list (cdr l) (car l)))
+        ((and (numberp (car l)) (<= (car l) max_so_far)) (max_nonlinear_list (cdr l) max_so_far))
+        ((and (listp (car l)) (> (max_nonlinear_list (car l) 0)  max_so_far)) (max_nonlinear_list (cdr l) (max_nonlinear_list (car l) 0)))
+        ((and (listp (car l)) (<= (max_nonlinear_list (car l) 0)  max_so_far)) (max_nonlinear_list (cdr l) max_so_far))
+        (t (max_nonlinear_list (cdr l) max_so_far))
+    )
+)
+
+;delete_all(l, e) = nil, l is null
+		  = delete_all(l1, e) U delete_all(l2,...,ln, e), l1 is list
+		  = delete_all(l2,...,ln, e), l1 = e
+		  = l1 U delete_all(l2,...,ln, e), otherwise
+
+(defun delete_all(l e)
+    (cond 
+        ((null l) nil)
+        ((listp (car l)) (cons (delete_all (car l) e) (delete_all (cdr l) e)))
+        ((equal (car l) e) (delete_all (cdr l) e))
+        (t (cons (car l) (delete_all (cdr l) e)))
+    )
+)
+
+(defun product_nonlinear_list(l product_so_far)
+    (cond
+        ((null l) product_so_far)
+        ((and (atom (car l)) (numberp (car l)) (= 0 (mod (car l) 2))) (product_nonlinear_list (cdr l) (* product_so_far (car l))))
+        ((and (atom (car l)) (numberp (car l)) (= 1 (mod (car l) 2))) (product_nonlinear_list (cdr l) product_so_far))
+        ((listp (car l)) (product_nonlinear_list (cdr l) (* product_so_far (product_nonlinear_list (car l) 1))))
+        (t (product_nonlinear_list (cdr l) product_so_far))
+    )
+)   
+;(write(lcm_list '(2 3 4 (5 5) e 6) 1))
+;(write (mountain '(18 19 20 17 16) 0 0 0 0))
+;(write (max_nonlinear_list '(13 14 10 (10 66 20 66) e r 66 12 11 66 56 34) 0))
+;(setq a '(13 14 10 (10 66 (10 66 20) 20 66) e r 66 12 11 66 56 34))
+;(write (delete_all a (max_nonlinear_list a 0)))
+(setq a1 10)
+(setq a2 21)
+(setq a3 14)
+(setq a4 2)
+(setq e "monstru")
+(setq r "voldemort")
+(setq b (list a1 13 2 (list a1 67 (list 9 a2 3) 3 5) e r 1 a3 11 1 a4 1))
+(format t "Here it is:~%")
+(write (product_nonlinear_list b 1))
+
+;gnu clisp 2.49
+
+(defun afis (x)
+    (write x)
+)
+
+(defun substitute_list (x l2 e)
+    (cond
+        ((and (numberp x) (= x e)) l2)
+        ((atom x) x)
+        (t (mapcar #'(lambda (a) (substitute_list a l2 e)) x))
+    )
+)
+
+(setq e "voldemort")
+(setq r 66)
+
+(write(substitute_list '(13 14 10 (10 66 (10 66 20) 20 66) e r 66 12 11 66 56 34) '(20 30) r))
+
+L2
+
+(defun nodes_level (tree level level_so_far)
+    (cond
+        ((and (atom tree) (= level level_so_far)) 1)
+        ((atom tree) 0)
+        (t (apply '+ (mapcar #'(lambda (a) (nodes_level a level (+ 1 level_so_far))) tree)))
+    )
+)
+
+(defun max_whole (tree level nr_level max_so_far level_max)
+    (cond
+        ((and (= 0 nr_level) (not (= level 0))) level_max)
+        ((> (nodes_level tree (+ 1 level) 0) max_so_far) (max_whole tree (+ 1 level) (nodes_level tree (+ 1 level) 0) (nodes_level tree (+ 1 level) 0) (+ 1 level)))
+        ((< (nodes_level tree (+ 1 level) 0) max_so_far) (max_whole tree (+ 1 level) (nodes_level tree (+ 1 level) 0) max_so_far level_max))
+    )
+)
+
+(defun get_level (tree level level_so_far)
+    (cond
+        ((and (atom tree) (= level level_so_far)) tree)
+        ((atom tree) 0)
+        (t (mapcar #'(lambda (a) (get_level a level (+ 1 level_so_far))) tree))
+    )
+)
+
+(defun transform(l)
+    (cond
+         ((null l) nil)
+         ((numberp (car l)) (transform (cdr l)))
+         ((atom (car l)) (cons (car l) (transform (cdr l))))
+         (T (APPEND (transform (car l)) (transform (cdr l))))
+    )
+)
+
+(defun problem(l)
+    (write (max_whole l 0 0 0 0))
+    (format t "~%")
+    (write (transform (get_level l (max_whole l 0 0 0 0) 0)))
+)
+
+(setq G '(A (B Q S L) (C R (QP J X) (E))))
+(problem G);
+
+(defun substitute_list (x l2 e)
+    (cond
+        ((equal x e) l2 )
+        ((atom x) x)
+        ((listp x) (mapcar #'(lambda (a) (substitute_list a l2 e)) x))
+    )
+)
+
+(setq A '(12 234 (35 h j (12 45) 67) c (d e) 3 (gh (st 12)) 56 67))
+(setq B '(1002 1001))
+(setq rez '())
+;(write B)
+(write (substitute_list A B 12))
+
+; sterge sublistele liniare cu numar par de elemente
+
+(DEFUN has_even_no_of_elements (L)
+       (COND
+            ((EQUAL (MOD (list-length L) 2) 0))
+        )
+)
+
+(DEFUN is_linear (L)
+       (COND
+            ((NULL L) T)
+            ((listp (CAR L)) NIL)
+            (T (is_linear (CDR L)))
+        )
+)
+
+(DEFUN delete_even_length_lists (L)
+       (COND
+            ((NULL L) NIL)
+            ((ATOM (CAR L)) (CONS (CAR L) (delete_even_length_lists (CDR L))))
+            ((AND (is_linear (CAR L)) (has_even_no_of_elements (CAR L))) (delete_even_length_lists (CDR L)))
+            (T (CONS (delete_even_length_lists (CAR L)) (delete_even_length_lists (CDR L))))
+        )
+)
+
+(PRINT (delete_even_length_lists '((2 3 4) (6 (7 8) ((7 9) 8)) (6 8) 9)))
+     
+r2
+(DEFUN linearize (L)
+       (COND 
+            ((NULL L) NIL)
+            ((ATOM (CAR L)) (CONS (CAR L) (linearize (CDR L))))
+            (T (APPEND (linearize (CAR L)) (linearize (CDR L))))
+        )
+)
+
+(DEFUN remove_numbers (L)
+       (COND
+            ((NULL L) NIL)
+            ((NUMBERP (CAR L)) (remove_numbers (CDR L)))
+            (T (CONS (CAR L) (remove_numbers (CDR L))))
+        )
+)
+
+(DEFUN my_set (L)
+       (COND
+            ((NULL L) NIL)
+            ((NOT (MEMBER (CAR L) (CDR L))) (CONS (CAR L) (my_set (CDR L))))
+            (T (my_set (CDR L)))
+        )
+)
+
+(defun rev (L)
+    (COND
+         ((NULL L) NIL)
+         (T (APPEND (rev (CDR L)) (LIST (CAR L))))
+     )
+)
+
+
+(PRINT (rev (my_set (remove_numbers (linearize '(3 a (b (c (4 (d 5) b 3)) 7)))))))
+
+(defun count_atoms (x)
+    (cond
+        ((and (atom x) (not (numberp x))) 1)
+        ((numberp x) 0)
+        (t (apply '+ (mapcar #'count_atoms x)))
+    )
+)
+
+;L3-P14
+(defun count_atoms (x)
+    (cond
+        ((and (atom x) (not (numberp x))) 1)
+        ((numberp x) 0)
+        (t (apply '+ (mapcar #'count_atoms x)))
+    )
+)
+
+;L3-P15
+(defun reverse_list (x)
+    (cond
+        ((atom x) x)
+        (t (mapcar #'reverse_list (reverse x)))
+    )
+)
+
+;L3-P11
+(defun linear_list (l)
+    (cond
+        ((null l) t)
+        ((listp (car l)) nil)
+        (t (linear_list (cdr l)))
+    )
+)
+                        
+(defun determine_depth (x)
+    (cond
+        ((or (atom x) (linear_list x)) 0)
+        (t (+ 1 (apply 'max (mapcar #'determine_depth x))))
+    )
+)

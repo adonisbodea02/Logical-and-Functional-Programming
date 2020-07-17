@@ -1,0 +1,96 @@
+;L1-P5
+a) Write twice the n-th element of a linear list. Example: for (10 20 30 40 50) and n=3 will produce (10
+20 30 30 40 50).
+b) Write a function to return an association list with the two lists given as parameters.
+ Example: (A B C) (X Y Z) --> ((A.X) (B.Y) (C.Z)).
+c) Write a function to determine the number of all sublists of a given list, on any level.
+ A sublist is either the list itself, or any element that is a list, at any level. Example:
+ (1 2 (3 (4 5) (6 7)) 8 (9 10)) => 5 lists:
+(list itself, (3 ...), (4 5), (6 7), (9 10)).
+d) Write a function to return the number of all numerical atoms in a list at superficial level.
+
+;a)
+(defun duplicate(l pos current_pos)
+    (cond
+        ((null l) nil)
+        ((= pos current_pos) (append (list (car l)) (list (car l)) (duplicate (cdr l) pos (+ 1 current_pos))))
+        (t (append (list (car l)) (duplicate (cdr l) pos (+ 1 current_pos))))
+    )
+)
+
+;b)
+(defun associate(l1 l2)
+    (cond
+        ((or (null l1) (null l2)) nil)
+        (t (cons (list (car l1) (car l2)) (associate (cdr l1) (cdr l2))))
+    )
+)
+
+;c)
+(defun count_sublists(l rez)
+    (cond 
+        ((null l) rez)
+        ((listp (car l)) (count_sublists (cdr l) (count_sublists (car l) (+ 1 rez))))
+        (t (count_sublists (cdr l) rez))
+    )
+)
+
+;d)
+(defun count_numbers(l rez)
+    (cond 
+        ((null l) rez)
+        ((listp (car l)) (count_numbers (cdr l) (count_numbers (car l) rez)))
+        ((numberp (car l)) (count_numbers (cdr l) (+ 1 rez)))
+        (t (count_numbers (cdr l) rez))
+    )
+)
+
+;L1-P15
+a) Write a function to insert an element E on the n-th position of a linear list.
+b) Write a function to return the sum of all numerical atoms of a list, at any level.
+c) Write a function to return the set of all sublists of a given linear list. Ex. For list ((1 2 3) ((4 5) 6)) =>
+((1 2 3) (4 5) ((4 5) 6))
+d) Write a function to test the equality of two sets, without using the difference of two sets.
+;a)
+(defun insert_pos(l pos el current_pos)
+    (cond
+        ((null l) nil)
+        ((= pos current_pos) (append (list el) (insert_pos (cdr l) pos el (+ 1 current_pos))))
+        (t (append (list (car l)) (insert_pos (cdr l) pos el (+ 1 current_pos))))
+    )
+)
+
+;b)
+(defun sum_numbers(l s)
+    (cond 
+        ((null l) s)
+        ((listp (car l)) (sum_numbers (cdr l) (sum_numbers (car l) s)))
+        ((numberp (car l)) (sum_numbers (cdr l) (+ (car l) s)))
+        (t (sum_numbers (cdr l) s))
+    )
+)
+
+;c)
+(defun list_sublists(l)
+    (cond 
+        ((null l) nil)
+        ((listp (car l)) (append (list (car l)) (list_sublists (car l)) (list_sublists (cdr l))))
+        (t (list_sublists (cdr l)))
+    )
+)
+
+;d)
+(defun inclusion (l1 l2)
+    (cond
+        ((null l1) t)
+        ((not (member (car l1) l2)) nil)
+        (t (inclusion (cdr l1) l2))
+    )
+)
+
+(defun test_equality_sets (l1 l2)
+    (cond
+        ((not (= (length l1) (length l2))) nil)
+        ((and (inclusion l1 l2) (inclusion l2 l1)) t)
+    )
+)

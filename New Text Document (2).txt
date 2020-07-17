@@ -1,0 +1,56 @@
+learn you a haskell for the greater good 
+
+%subset(l1,l2,...,ln) = [], n = 0
+%					  = l1 |_| subset(l2,...,ln), n>0
+%					  = subset(l2,...,ln), n>0
+%subset(L:list, R:list of lists)
+%subset(i,o)
+subset([],[]).
+subset([H|T], R):-subset(T,R1),
+	R = [H|R1].
+subset([_H|T], R):-subset(T,RList),
+    R = RList.
+
+%sum(l1,l2,...,ln,s) = s, n = 0
+%					 = s + l1 + sum(l2,...ln), 
+%sum(L:list, S:integer)
+%sum(i,o)
+sum([], R, S):- S = R.
+sum([H|T], R, S):-
+    NewR is R + H,
+    sum(T, NewR, S).
+
+onesol([H|T], Sum, R):-
+    subset([H|T], Rez),
+    sum(Rez, 0, S),
+    S == Sum,
+    R = Rez.
+
+allsolutions([H|T],Sum,RALL):-
+    findall(ROS,onesol([H|T],Sum,ROS),RALL).
+
+
+generate_candidates(N,Left,Rigth,Rez):-
+    N div 2 + 1 >= Left,
+    N div 2 + 1 >= Rigth,
+    NewLeft is Left + 1,
+    create_list(Left, Rigth, RList),
+    len(RList, 0, L),
+    L > 1,
+    generate_candidates(N,NewLeft,Rigth,NRez),
+    Rez = [RList|NRez].
+
+generate_candidates(N,Left,Rigth,Rez):-
+    N div 2 + 1 >= Left,
+    N div 2 + 1 >= Rigth,
+    NewRigth is Rigth + 1,
+    generate_candidates(N,Left,NewRigth,NRez),
+    Rez = NRez.
+
+generate_candidates(_N,Left,Rigth,Rez):-
+    Left > Rigth,
+    Rez = [].
+
+generate_candidates(N,_Left,Rigth,Rez):-
+    N div 2 + 1 < Rigth,
+    Rez = [].
